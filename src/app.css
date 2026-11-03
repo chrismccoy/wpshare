@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --header-h: 57px;
+  --bar-h: 96px;
+}
+
+@layer components {
+  .site-header {
+    @apply flex items-center justify-between px-5 py-3 border-b border-white/10 bg-panel/80 backdrop-blur;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #30363d;
+  border-radius: 8px;
+}
+.tok-h {
+  color: #7ee787;
+}
+.tok-k {
+  color: #ff7b72;
+}
+.tok-s {
+  color: #a5d6ff;
+}
+.tok-c {
+  color: #8b949e;
+  font-style: italic;
+}
+.tok-f {
+  color: #d2a8ff;
+}
+.tok-n {
+  color: #79c0ff;
+}
+.file-pane {
+  display: none;
+}
+.file-pane.active {
+  display: block;
+}
+.tree-file.active {
+  background: rgba(167, 139, 250, 0.2);
+  color: #fff;
+}
+#toast {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+#toast.hidden-toast {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+}
+
+.drag-active {
+  border-color: #a78bfa !important;
+  background: rgba(167, 139, 250, 0.06) !important;
+}
+
+.hljs-section,
+.hljs-title:not(.function_) {
+  color: #7ee787;
+}
+.hljs-keyword,
+.hljs-meta,
+.hljs-selector-tag,
+.hljs-bullet {
+  color: #ff7b72;
+}
+.hljs-string,
+.hljs-code {
+  color: #a5d6ff;
+}
+.hljs-comment,
+.hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+.hljs-built_in,
+.hljs-title.function_,
+.hljs-attr {
+  color: #d2a8ff;
+}
+.hljs-number,
+.hljs-literal,
+.hljs-link,
+.hljs-variable {
+  color: #79c0ff;
+}

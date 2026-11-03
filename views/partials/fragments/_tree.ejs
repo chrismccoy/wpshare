@@ -1,0 +1,22 @@
+<% nodes.forEach((node) => { -%>
+<% if (node.type === "dir") { -%>
+          <button
+            data-folder="<%= node.path %>"
+            class="w-full text-left px-4 py-1.5 hover:bg-white/5 flex gap-2 text-gray-300"
+          >
+            <span data-folder-icon>▾</span>
+            <span>📁 <%= node.name %>/</span>
+          </button>
+          <div data-folder-body="<%= node.path %>" class="pl-6">
+<%- include('_tree', { nodes: node.children, activePath }) -%>
+          </div>
+<% } else { -%>
+          <button
+            data-path="<%= node.path %>"
+            class="tree-file<%= node.path === activePath ? ' active' : '' %> w-full text-left px-4 py-1.5 rounded-md flex gap-2 hover:bg-white/5 text-gray-400"
+          >
+            <span><%= node.icon %></span>
+            <span class="truncate"><%= node.name %></span>
+          </button>
+<% } -%>
+<% }) -%>

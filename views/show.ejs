@@ -1,0 +1,181 @@
+<%_
+  const first = manifest[0];
+  const linesText = (entry) => (entry.preview === "text" ? `${entry.lines} lines` : "—");
+  const textEntries = manifest.filter((entry) => entry.preview === "text" && Object.hasOwn(rendered, entry.path));
+_%>
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <%- include('partials/layout/_head') %>
+    <title><%= site.name %> — <%= pkg.name %></title>
+  </head>
+  <body class="bg-ink text-gray-200 font-sans min-h-screen">
+    <header class="site-header sticky top-0 z-20">
+      <%- include('partials/layout/_topbar') %>
+      <div
+        class="hidden md:flex items-center gap-2 text-sm font-mono bg-black/40 border border-white/10 rounded-lg px-3 py-1.5"
+      >
+        <span
+          class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"
+        ></span>
+        <span><%= shareHost %></span>
+        <button
+          id="copyLinkBtn"
+          data-share-url="<%= shareUrl %>"
+          class="text-violet-300 text-xs ml-2 hover:text-white min-w-[70px]"
+        >
+          COPY LINK
+        </button>
+      </div>
+      <a
+        href="/"
+        class="text-sm bg-white text-black font-semibold px-4 py-1.5 rounded-lg hover:bg-gray-200"
+      >
+        + Upload .zip
+      </a>
+    </header>
+
+    <div
+      id="packageBar"
+      class="bg-ink md:sticky md:top-[var(--header-h)] md:z-10"
+    >
+      <div
+        class="max-w-7xl mx-auto px-5 pt-6 pb-4 flex flex-wrap items-center justify-between gap-3"
+      >
+        <div>
+          <h1 class="text-xl font-bold">
+            📦 <%= pkg.name %>
+            <span class="text-xs font-mono font-normal text-gray-400">
+              <% if (pkg.version) { %>v<%= pkg.version %> • <% } %><%= pkg.fileCount %> files • <%= format.formatSize(pkg.sizeBytes) %>
+            </span>
+          </h1>
+          <p class="text-sm text-gray-400">
+            Uploaded <%= format.timeAgo(pkg.createdAt) %> • <%= pkg.typeLabel %>
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2 text-sm">
+<% removalNotes.forEach((note) => { -%>
+          <p class="text-xs text-amber-300/90 font-mono"><%= note.dir %> removed. Run <code class="text-amber-200"><%= note.command %></code> to restore dependencies.</p>
+<% }) -%>
+          <button
+            id="copyFileBtn"
+            class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 hover:bg-white/20 min-w-[110px] disabled:hover:bg-white/10 disabled:cursor-not-allowed"
+          >
+            ⧉ Copy file
+          </button>
+          <button
+            id="rawBtn"
+            class="px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 hover:bg-white/20 disabled:hover:bg-white/10 disabled:cursor-not-allowed"
+          >
+            &lt;&gt; Raw
+          </button>
+          <button
+            id="downloadBtn"
+            data-zip-url="<%= pkg.zipUrl %>"
+            data-download-name="<%= pkg.downloadName %>"
+            class="px-3 py-1.5 rounded-lg bg-emerald-500 text-black font-semibold hover:bg-emerald-400 min-w-[150px]"
+          >
+            ⬇ Download .zip
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <main
+      class="max-w-7xl mx-auto px-5 pb-16 grid grid-cols-1 md:grid-cols-[280px_1fr] gap-4"
+    >
+      <aside
+        class="bg-panel border border-white/10 rounded-xl overflow-hidden h-fit flex flex-col md:sticky md:top-[calc(var(--header-h)+var(--bar-h))] md:max-h-[calc(100vh-var(--header-h)-var(--bar-h)-16px)]"
+      >
+        <p
+          class="text-[11px] uppercase tracking-widest text-gray-500 px-4 pt-4 pb-2"
+        >
+          Explorer
+        </p>
+        <div class="pb-3 text-sm font-mono min-h-0 overflow-y-auto">
+<%- include('partials/fragments/_tree', { nodes: tree, activePath: first.path }) -%>
+        </div>
+        <div
+          class="border-t border-white/10 p-3 text-xs text-gray-500"
+        >
+          Click folder to expand • file to preview
+        </div>
+      </aside>
+
+      <section
+        id="viewer"
+        class="bg-panel border border-white/10 rounded-xl overflow-hidden flex flex-col min-h-[540px] scroll-mt-[calc(var(--header-h)+var(--bar-h))]"
+      >
+        <div
+          class="flex items-center justify-between px-4 py-2.5 border-b border-white/10 bg-black/30"
+        >
+          <div id="breadcrumb" class="font-mono text-sm">
+            <%= first.path %>
+          </div>
+          <div
+            class="flex items-center gap-3 text-xs font-mono text-gray-400"
+          >
+            <span
+              id="langBadge"
+              class="px-2 py-0.5 rounded bg-violet-500/20 text-violet-200 border border-violet-500/30"
+            >
+              <%= first.lang %>
+            </span>
+            <span id="lineCount"><%= linesText(first) %></span>
+          </div>
+        </div>
+        <pre
+          class="flex-1 overflow-auto p-5 text-[13.5px] leading-6 font-mono"
+        ><code><% manifest.forEach((entry, i) => { %><%- include('partials/fragments/_pane', { entry, active: i === 0, html: Object.hasOwn(rendered, entry.path) ? rendered[entry.path].html : "" }) %><% }) %></code></pre>
+<% textEntries.forEach((entry) => { -%>
+        <textarea class="hidden" data-raw="<%= entry.path %>">
+<%= rendered[entry.path].raw %></textarea>
+<% }) -%>
+        <div
+          class="px-4 py-2 border-t border-white/10 text-xs text-gray-500 font-mono flex justify-between"
+        >
+          <span>click highlighted paths to navigate</span>
+          <span><%= encodingLabel %></span>
+        </div>
+      </section>
+    </main>
+
+    <div
+      id="rawModal"
+      class="hidden fixed inset-0 bg-black/70 backdrop-blur grid place-items-center p-6 z-50"
+    >
+      <div
+        class="w-full max-w-3xl bg-panel border border-white/15 rounded-xl overflow-hidden"
+      >
+        <div
+          class="flex justify-between items-center px-4 py-3 border-b border-white/10"
+        >
+          <p class="font-mono text-sm">
+            Raw — <span id="rawName"></span>
+          </p>
+          <button
+            id="rawClose"
+            class="text-gray-400 hover:text-white"
+          >
+            ✕
+          </button>
+        </div>
+        <textarea
+          id="rawText"
+          readonly
+          class="w-full h-80 bg-black/50 p-4 font-mono text-xs text-gray-200 outline-none"
+        ></textarea>
+      </div>
+    </div>
+
+    <div
+      id="toast"
+      class="hidden-toast fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-panel border border-emerald-500/30 text-sm font-mono shadow-xl"
+    >
+      <span class="text-emerald-300">✓</span>
+      <span id="toastMsg">Done</span>
+    </div>
+
+    <script src="/js/package.js"></script>
+  </body>
+</html>

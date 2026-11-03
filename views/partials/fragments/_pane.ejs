@@ -1,0 +1,7 @@
+<div class="file-pane<%= active ? ' active' : '' %>" data-path="<%= entry.path %>" data-lang="<%= entry.lang %>" data-lines="<%= entry.lines ?? '' %>" data-preview="<%= entry.preview %>"><% if (entry.preview === "text") { -%>
+<%- html -%>
+<% } else if (entry.preview === "binary") { -%>
+<div class="text-center text-gray-500">binary file — <%= format.formatSize(entry.size) %>, not previewable</div><% } else if (entry.preview === "over-budget") { -%>
+<div class="text-center text-gray-500">preview limit reached — <%= format.formatSize(entry.size) %></div><% } else { -%>
+<div class="text-center text-gray-500">file too large to preview — <%= format.formatSize(entry.size) %></div><% } -%>
+</div>

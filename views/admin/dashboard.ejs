@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <%- include('../partials/layout/_head') %>
+    <title>Admin — <%= site.name %></title>
+    <meta name="csrf-token" content="<%= csrfToken %>">
+  </head>
+
+  <body class="bg-ink text-gray-200 font-sans min-h-screen flex flex-col antialiased">
+
+    <header class="site-header">
+
+      <div class="flex items-center gap-3">
+        <%- include('../partials/layout/_topbar') %>
+
+        <div class="w-px h-4 bg-white/10"></div>
+
+        <span class="text-sm text-gray-400">Admin</span>
+
+        <a
+          href="/"
+          target="_blank"
+          class="px-3 py-1.5 text-xs font-medium rounded-lg bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 hover:text-white transition"
+        >
+          View Site &nearr;
+        </a>
+      </div>
+
+      <div class="flex items-center gap-2">
+        <% if (total > 0) { %>
+          <button
+            id="trashAllBtn"
+            type="button"
+            class="px-3 py-1.5 text-sm font-medium rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition cursor-pointer"
+          >
+            Trash all
+          </button>
+        <% } %>
+
+        <form method="post" action="/admin/logout">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>" />
+          <button
+            type="submit"
+            class="px-3 py-1.5 text-sm font-medium rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition"
+          >
+            Sign out
+          </button>
+        </form>
+      </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-6xl mx-auto p-6">
+
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-lg font-semibold text-white">Packages</h2>
+        <span id="packageCount" class="text-sm text-gray-400">
+          <%= total %> total
+        </span>
+      </div>
+
+      <% if (packages.length === 0) { %>
+
+        <%- include('../partials/fragments/_empty_packages') %>
+
+      <% } else { %>
+
+        <div data-package-table class="bg-panel border border-white/10 rounded-2xl overflow-hidden">
+          <table class="w-full text-sm">
+
+            <thead>
+              <tr class="border-b border-white/10 text-left">
+                <th class="px-5 py-3 font-semibold text-gray-400">Name</th>
+                <th class="px-5 py-3 font-semibold text-gray-400">Key</th>
+                <th class="px-5 py-3 font-semibold text-gray-400">Files</th>
+                <th class="px-5 py-3 font-semibold text-gray-400">Size</th>
+                <th class="px-5 py-3 font-semibold text-gray-400">Expires</th>
+                <th class="px-5 py-3 font-semibold text-gray-400">Created</th>
+                <th class="px-5 py-3 font-semibold text-gray-400 text-right">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <% packages.forEach((pkg) => { %>
+                <tr
+                  class="border-b border-white/10 last:border-0 hover:bg-white/5 transition"
+                  data-row-id="<%= pkg.id %>"
+                >
+                  <td class="px-5 py-3">
+                    <a
+                      href="<%= pkg.url %>"
+                      target="_blank"
+                      rel="noopener"
+                      class="text-violet-300 hover:underline"
+                    >
+                      <%= pkg.name %>
+                    </a>
+                  </td>
+
+                  <td class="px-5 py-3 font-mono text-gray-300">
+                    <%= pkg.key %>
+                  </td>
+
+                  <td class="px-5 py-3 text-gray-400">
+                    <%= pkg.fileCount %>
+                  </td>
+
+                  <td class="px-5 py-3 text-gray-400">
+                    <%= format.formatSize(pkg.sizeBytes) %>
+                  </td>
+
+                  <td class="px-5 py-3 <%= pkg.isExpired ? 'text-red-400' : 'text-gray-400' %>">
+                    <%= format.timeLeft(pkg.expiresAt) %>
+                  </td>
+
+                  <td class="px-5 py-3 text-gray-500">
+                    <%= format.dateTime(pkg.createdAt) %>
+                  </td>
+
+                  <td class="px-5 py-3 text-right">
+                    <div class="inline-flex items-center gap-2">
+
+                      <a
+                        href="<%= pkg.url %>"
+                        target="_blank"
+                        rel="noopener"
+                        class="px-3 py-1.5 text-xs font-medium rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition"
+                      >
+                        View
+                      </a>
+
+                      <button
+                        type="button"
+                        class="delete-btn px-3 py-1.5 text-xs font-medium rounded-lg text-red-400 hover:text-red-300 hover:bg-red-500/10 transition cursor-pointer"
+                        data-id="<%= pkg.id %>"
+                      >
+                        Delete
+                      </button>
+
+                    </div>
+                  </td>
+                </tr>
+              <% }); %>
+            </tbody>
+
+          </table>
+        </div>
+
+        <% if (totalPages > 1) { %>
+          <div data-pagination class="flex items-center justify-between mt-5">
+
+            <% if (page > 1) { %>
+              <a
+                href="<%= pageUrl(page - 1) %>"
+                class="px-4 py-2 text-sm font-medium rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition"
+              >
+                &larr; Previous
+              </a>
+            <% } else { %>
+              <span></span>
+            <% } %>
+
+            <span class="text-sm text-gray-400">
+              Page <%= page %> of <%= totalPages %>
+            </span>
+
+            <% if (page < totalPages) { %>
+              <a
+                href="<%= pageUrl(page + 1) %>"
+                class="px-4 py-2 text-sm font-medium rounded-lg border border-white/10 text-gray-400 hover:text-white hover:bg-white/5 transition"
+              >
+                Next &rarr;
+              </a>
+            <% } else { %>
+              <span></span>
+            <% } %>
+
+          </div>
+        <% } %>
+
+      <% } %>
+    </main>
+
+    <template id="emptyStateTpl">
+      <%- include('../partials/fragments/_empty_packages') %>
+    </template>
+
+    <script src="/js/admin.js"></script>
+  </body>
+</html>

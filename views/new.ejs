@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+  <head>
+    <%- include('partials/layout/_head') %>
+    <title><%= site.name %> — Upload a plugin or theme</title>
+    <meta name="csrf-token" content="<%= csrfToken %>" />
+  </head>
+  <body class="bg-ink text-gray-200 font-sans min-h-screen" data-max-bytes="<%= maxBytes %>" data-upload-url="<%= uploadUrl %>">
+    <header class="site-header sticky top-0 z-20">
+      <%- include('partials/layout/_topbar') %>
+      <p class="text-xs font-mono text-gray-500">
+        / upload
+      </p>
+    </header>
+
+    <main
+      class="max-w-2xl mx-auto px-5 pt-16 pb-20 text-center"
+    >
+<% if (hero.showEyebrow) { -%>
+      <div
+        class="inline-flex items-center gap-2 text-xs font-mono px-3 py-1 rounded-full bg-violet-500/60 border border-violet-300/60 text-white mb-6"
+      >
+        <%= hero.eyebrow %>
+      </div>
+<% } -%>
+
+      <h1
+        class="text-4xl md:text-[40px] md:leading-tight font-extrabold tracking-tight"
+      >
+        <%= hero.title %>
+        <span
+          class="bg-gradient-to-r from-violet-400 to-emerald-300 bg-clip-text text-transparent"
+        >
+          <%= hero.titleGradient %>
+        </span>
+      </h1>
+
+      <p class="text-gray-400 mt-4 text-sm">
+        <% hero.introParts.forEach(({ text, code }) => { %><% if (code) { %><code class="font-mono text-gray-300"><%= text %></code><% } else { %><%= text %><% } %><% }) %>
+      </p>
+
+      <div
+        id="dropzone"
+        class="mt-8 border-2 border-dashed border-white/15 rounded-2xl bg-panel p-12 transition-all cursor-pointer hover:border-white/30"
+      >
+        <div class="text-5xl">📦</div>
+        <p class="font-semibold mt-4">
+          Drag &amp; drop your .zip here
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+          or
+          <span class="text-violet-300 underline">
+            browse files
+          </span>
+        </p>
+        <input
+          id="fileInput"
+          type="file"
+          accept=".zip"
+          class="hidden"
+        />
+        <div
+          class="flex flex-wrap justify-center gap-2 mt-6 text-[11px] font-mono text-gray-500"
+        >
+          <span
+            class="px-2 py-1 bg-black/40 rounded border border-white/10"
+          >
+            plugin or theme header required
+          </span>
+          <span
+            class="px-2 py-1 bg-black/40 rounded border border-white/10"
+          >
+            max <%= format.formatMb(maxBytes) %>
+          </span>
+          <span
+            id="expiryHint"
+            class="px-2 py-1 bg-black/40 rounded border border-white/10"
+          ><%= defaultExpiryHint %></span>
+        </div>
+      </div>
+
+      <div
+        id="status"
+        class="hidden mt-6 text-left bg-panel border border-white/10 rounded-xl p-4"
+      >
+        <div
+          class="flex justify-between gap-3 text-sm font-mono"
+        >
+          <span
+            id="fileName"
+            class="truncate text-gray-200"
+          >
+            No file selected
+          </span>
+          <span
+            id="fileSize"
+            class="text-gray-500 shrink-0"
+          ></span>
+        </div>
+        <p
+          id="ready"
+          class="text-xs font-mono text-emerald-300 mt-2"
+        >
+          ✓ ready to upload
+        </p>
+      </div>
+
+      <div
+        class="mt-6 text-left bg-panel border border-white/10 rounded-xl p-4 flex flex-col gap-3"
+      >
+        <fieldset
+          class="flex flex-wrap items-center justify-between gap-3 text-sm"
+        >
+          <legend class="contents">
+            <span>
+              Expiry
+              <span class="block text-xs text-gray-500">
+                Link auto-deletes after this time
+              </span>
+            </span>
+          </legend>
+          <div class="flex gap-1 bg-black/40 border border-white/10 rounded-lg p-1">
+<% expiryChoices.forEach(({ value, label, hint, checked }) => { -%>
+            <label class="cursor-pointer">
+              <input
+                type="radio"
+                name="expiry"
+                value="<%= value %>"
+                data-hint="<%= hint %>"
+                class="peer sr-only"
+                <%= checked ? "checked" : "" %>
+              />
+              <span
+                class="block px-3 py-1 rounded-md text-gray-400 hover:text-white peer-checked:bg-white peer-checked:text-black peer-focus-visible:ring-2 peer-focus-visible:ring-violet-400"
+              ><%= label %></span>
+            </label>
+<% }) -%>
+          </div>
+        </fieldset>
+      </div>
+
+      <div id="progressWrap" class="hidden mt-6 h-2 rounded-full bg-white/10 overflow-hidden">
+        <div id="progress" class="h-full bg-violet-400 transition-all"></div>
+      </div>
+
+      <button
+        id="submitBtn"
+        type="button"
+        disabled
+        class="mt-6 w-full py-3 rounded-xl border border-transparent bg-white text-black font-bold enabled:hover:bg-gray-200 disabled:bg-violet-500/60 disabled:border-violet-300/60 disabled:text-white disabled:cursor-not-allowed"
+      >
+        Upload
+      </button>
+      <p id="error" class="hidden mt-3 text-sm text-red-400"></p>
+
+      <div
+        class="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-8 text-left"
+      >
+        <div
+          class="bg-panel border border-white/10 rounded-xl p-4"
+        >
+          <p class="text-xl">🔗</p>
+          <p class="text-sm font-bold mt-2">Link per upload</p>
+          <p class="text-xs text-gray-500">
+            <%= host %>/p/xxxx · <%= host %>/t/xxxx
+          </p>
+        </div>
+        <div
+          class="bg-panel border border-white/10 rounded-xl p-4"
+        >
+          <p class="text-xl">🌳</p>
+          <p class="text-sm font-bold mt-2">Browse the code</p>
+          <p class="text-xs text-gray-500">
+            every plugin or theme file, in an expandable tree
+          </p>
+        </div>
+        <div
+          class="bg-panel border border-white/10 rounded-xl p-4"
+        >
+          <p class="text-xl">⧉</p>
+          <p class="text-sm font-bold mt-2">
+            Copy / Raw / Zip
+          </p>
+          <p class="text-xs text-gray-500">
+            copy a file, view it raw, or download the whole zip
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <script src="/js/shared/files.js"></script>
+    <script src="/js/upload.js"></script>
+  </body>
+</html>

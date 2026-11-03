@@ -1,0 +1,6 @@
+node_modules
+data/
+public/css/app.css
+.env
+uploads/
+package-lock.json
